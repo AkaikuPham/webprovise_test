@@ -1,0 +1,31 @@
+version: "3.8"
+
+services:
+  php:
+    build:
+      context: ./
+      dockerfile: ./docker/Dockerfile
+    container_name: webprovise-php
+    ports:
+      - "9002:9000"
+    volumes:
+      - .:/application
+      - ./:/var/www/html
+      - ./docker/php/php.ini:/usr/local/etc/php/php.ini
+
+  webserver:
+    image: nginx:1.17.10
+    container_name: webprovise-webserver
+    working_dir: /application
+    links:
+      - php:fpm
+    environment:
+      - FPM_HOST=fpm
+      - FPM_PORT=9000
+    volumes:
+      - .:/application
+      - ./:/var/www/html
+      - ./storage/logs/nginx/:/var/log/nginx
+      - ./docker/nginx_conf:/etc/nginx/conf.d/
+    ports:
+      - "8088:80"
